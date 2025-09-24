@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pose Tracker</title>
+    <style>
+      html, body { height: 100%; margin: 0; background: #0b0f14; color: #e8eef7; }
+      .stage { position: fixed; inset: 0; overflow: hidden; }
+      video { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); z-index: 0; background: #000; }
+      canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+      .hud { position: absolute; left: 12px; top: 10px; z-index: 2; font: 14px/1.3 system-ui; backdrop-filter: blur(4px); background: rgba(16,19,23,0.5); padding: 8px 10px; border-radius: 8px; }
+      .hud label { margin-right: 6px; }
+      select, button { background: #1a2433; color: #e8eef7; border: 1px solid #314156; padding: 4px 6px; border-radius: 6px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+  </head>
+  <body>
+    <div class="stage">
+      <video id="webcam" autoplay playsinline muted></video>
+      <canvas id="overlay"></canvas>
+      <div class="hud">
+        <label for="model">Model:</label>
+        <select id="model">
+          <option value="lightning" selected>MoveNet Lightning (fast)</option>
+          <option value="thunder">MoveNet Thunder (accurate)</option>
+        </select>
+        <span id="fps" style="margin-left:10px; opacity:.8;">FPS: --</span>
+      </div>
+    </div>
+    <script type="module" src="/static/pose.js"></script>
+  </body>
+  </html>

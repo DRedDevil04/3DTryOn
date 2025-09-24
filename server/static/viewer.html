@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GLB Viewer</title>
+    <style>
+      html, body { height: 100%; margin: 0; background: #0b0f14; color: #e8eef7; }
+      #app { position: fixed; inset: 0; overflow: hidden; }
+      #app video { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); z-index: 0; background: #000; }
+  #app canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 1; }
+  #overlay { z-index: 2; pointer-events: none; }
+      #label { position: absolute; left: 12px; top: 10px; z-index: 2; font: 14px/1.2 system-ui; opacity: 0.9; }
+      .panel { position: absolute; right: 12px; top: 10px; z-index: 2; font: 13px/1.2 system-ui; color: #e8eef7; background: rgba(16,19,23,0.6); border: 1px solid #2a3340; border-radius: 8px; padding: 10px; width: 260px; }
+      .row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+      .row label { width: 90px; opacity: .85; }
+      .row input[type=range] { flex: 1; }
+      .row input[type=number] { width: 74px; background: #0f1722; color: #e8eef7; border: 1px solid #314156; border-radius: 6px; padding: 3px 6px; }
+      a { color: #9ecbff; text-decoration: none; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+          "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <video id="webcam" autoplay playsinline muted></video>
+      <canvas id="overlay"></canvas>
+    </div>
+    <div id="label">Loading: /static/models/tshirt.glb</div>
+    <div class="panel">
+      <div class="row"><label>Tracking</label>
+        <select id="poseModel">
+          <option value="lightning" selected>MoveNet (Lightning)</option>
+          <option value="thunder">MoveNet (Thunder)</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
+      <div class="row"><label>Scale</label>
+        <input id="scaleMul" type="range" min="0.5" max="2.0" step="0.01" value="1.0">
+        <input id="scaleMulNum" type="number" min="0.5" max="2.0" step="0.01" value="1.0">
+      </div>
+      <div class="row"><label>Offset X</label>
+        <input id="offX" type="range" min="-1.5" max="1.5" step="0.005" value="0">
+        <input id="offXNum" type="number" min="-1.5" max="1.5" step="0.005" value="0">
+      </div>
+      <div class="row"><label>Offset Y</label>
+        <input id="offY" type="range" min="-1.5" max="1.5" step="0.005" value="0.06">
+        <input id="offYNum" type="number" min="-1.5" max="1.5" step="0.005" value="0.06">
+      </div>
+      <div class="row"><label>Rot Z</label>
+        <input id="rotZ" type="range" min="-0.8" max="0.8" step="0.005" value="0">
+        <input id="rotZNum" type="number" min="-0.8" max="0.8" step="0.005" value="0">
+      </div>
+      <div class="row"><label>Uniform</label>
+        <input id="uniform" type="checkbox" checked>
+        <span style="opacity:.7">Use same scale on X/Y</span>
+      </div>
+    </div>
+    <script type="module" src="/static/viewer.js"></script>
+  </body>
+  </html>
