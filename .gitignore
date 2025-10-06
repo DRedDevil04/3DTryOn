@@ -6,3 +6,5 @@ server/data/*
 !server/data/.gitkeep
 .env
 server/.env
+**/tryon.sh
+**/GeminiImahge

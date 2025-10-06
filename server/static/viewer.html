@@ -3,20 +3,142 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>GLB Viewer</title>
+    <title>AR T-shirt Try-On</title>
     <style>
-      html, body { height: 100%; margin: 0; background: #0b0f14; color: #e8eef7; }
+      html, body { height: 100%; margin: 0; background: #0b0f14; color: #e8eef7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
       #app { position: fixed; inset: 0; overflow: hidden; }
-      #app video { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); z-index: 0; background: #000; }
-  #app canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 1; }
-  #overlay { z-index: 2; pointer-events: none; }
-      #label { position: absolute; left: 12px; top: 10px; z-index: 2; font: 14px/1.2 system-ui; opacity: 0.9; }
-      .panel { position: absolute; right: 12px; top: 10px; z-index: 2; font: 13px/1.2 system-ui; color: #e8eef7; background: rgba(16,19,23,0.6); border: 1px solid #2a3340; border-radius: 8px; padding: 10px; width: 260px; }
-      .row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
-      .row label { width: 90px; opacity: .85; }
-      .row input[type=range] { flex: 1; }
-      .row input[type=number] { width: 74px; background: #0f1722; color: #e8eef7; border: 1px solid #314156; border-radius: 6px; padding: 3px 6px; }
-      a { color: #9ecbff; text-decoration: none; }
+      #app video { 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover; 
+        transform: scaleX(-1); 
+        z-index: 0; 
+        background: #000; 
+      }
+      #app canvas { 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        height: 100%; 
+        z-index: 1; 
+      }
+      #overlay { 
+        z-index: 2; 
+        pointer-events: none; 
+      }
+      #label { 
+        position: absolute; 
+        left: 12px; 
+        top: 10px; 
+        z-index: 3; 
+        font: 14px/1.2 system-ui; 
+        opacity: 0.9; 
+        background: rgba(0,0,0,0.5);
+        padding: 6px 10px;
+        border-radius: 6px;
+      }
+      .panel { 
+        position: absolute; 
+        right: 12px; 
+        top: 10px; 
+        z-index: 3; 
+        font: 13px/1.2 system-ui; 
+        color: #e8eef7; 
+        background: rgba(16,19,23,0.85); 
+        backdrop-filter: blur(10px);
+        border: 1px solid #2a3340; 
+        border-radius: 8px; 
+        padding: 12px; 
+        width: 280px; 
+      }
+      .panel h3 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #9ecbff;
+      }
+      .row { 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+        margin: 8px 0; 
+      }
+      .row label { 
+        width: 95px; 
+        opacity: .85; 
+        font-size: 12px;
+      }
+      .row input[type=range] { 
+        flex: 1; 
+        height: 4px;
+        appearance: none;
+        background: #1a2332;
+        border-radius: 2px;
+        outline: none;
+      }
+      .row input[type=range]::-webkit-slider-thumb {
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        background: #9ecbff;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      .row input[type=number] { 
+        width: 65px; 
+        background: #0f1722; 
+        color: #e8eef7; 
+        border: 1px solid #314156; 
+        border-radius: 6px; 
+        padding: 4px 6px; 
+        font-size: 12px;
+      }
+      .row input[type=checkbox] {
+        width: 16px;
+        height: 16px;
+      }
+      .status {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        z-index: 3;
+        background: rgba(0,0,0,0.6);
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+      }
+      .status.good { color: #4ade80; }
+      .status.warning { color: #facc15; }
+      .status.error { color: #f87171; }
+      
+      .advanced {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #2a3340;
+      }
+      .toggle-advanced {
+        background: none;
+        border: 1px solid #314156;
+        color: #9ecbff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 11px;
+        margin-bottom: 8px;
+      }
+      .toggle-advanced:hover {
+        background: rgba(158, 203, 255, 0.1);
+      }
+      .advanced-controls {
+        display: none;
+      }
+      .advanced-controls.show {
+        display: block;
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
@@ -34,36 +156,67 @@
       <video id="webcam" autoplay playsinline muted></video>
       <canvas id="overlay"></canvas>
     </div>
-    <div id="label">Loading: /static/models/tshirt.glb</div>
+    <div id="label">Initializing AR...</div>
     <div class="panel">
-      <div class="row"><label>Tracking</label>
+      <h3>AR T-shirt Controls</h3>
+      <div class="row">
+        <label>Model Quality</label>
         <select id="poseModel">
-          <option value="lightning" selected>MoveNet (Lightning)</option>
-          <option value="thunder">MoveNet (Thunder)</option>
-          <option value="off">Off</option>
+          <option value="lightning" selected>Fast (Lightning)</option>
+          <option value="thunder">Accurate (Thunder)</option>
+          <option value="off">Tracking Off</option>
         </select>
       </div>
-      <div class="row"><label>Scale</label>
-        <input id="scaleMul" type="range" min="0.5" max="2.0" step="0.01" value="1.0">
-        <input id="scaleMulNum" type="number" min="0.5" max="2.0" step="0.01" value="1.0">
+      <div class="row">
+        <label>Size</label>
+        <input id="scaleMul" type="range" min="0.7" max="3.5" step="0.01" value="1.15">
+        <input id="scaleMulNum" type="number" min="0.7" max="3.5" step="0.01" value="1.15">
       </div>
-      <div class="row"><label>Offset X</label>
-        <input id="offX" type="range" min="-1.5" max="1.5" step="0.005" value="0">
-        <input id="offXNum" type="number" min="-1.5" max="1.5" step="0.005" value="0">
+      <div class="row">
+        <label>Position X</label>
+        <input id="offX" type="range" min="-0.15" max="0.5" step="0.001" value="0">
+        <input id="offXNum" type="number" min="-0.15" max="0.5" step="0.001" value="0">
       </div>
-      <div class="row"><label>Offset Y</label>
-        <input id="offY" type="range" min="-1.5" max="1.5" step="0.005" value="0.06">
-        <input id="offYNum" type="number" min="-1.5" max="1.5" step="0.005" value="0.06">
+      <div class="row">
+        <label>Position Y</label>
+        <input id="offY" type="range" min="-0.2" max="1.5" step="0.001" value="0.05">
+        <input id="offYNum" type="number" min="-0.2" max="1.5" step="0.001" value="0.05">
       </div>
-      <div class="row"><label>Rot Z</label>
-        <input id="rotZ" type="range" min="-0.8" max="0.8" step="0.005" value="0">
-        <input id="rotZNum" type="number" min="-0.8" max="0.8" step="0.005" value="0">
-      </div>
-      <div class="row"><label>Uniform</label>
-        <input id="uniform" type="checkbox" checked>
-        <span style="opacity:.7">Use same scale on X/Y</span>
+      
+      <div class="advanced">
+        <button class="toggle-advanced" onclick="document.querySelector('.advanced-controls').classList.toggle('show')">
+          Advanced Settings ▼
+        </button>
+        <div class="advanced-controls">
+          <div class="row">
+            <label>Rotation</label>
+            <input id="rotZ" type="range" min="-0.3" max="0.3" step="0.005" value="0">
+            <input id="rotZNum" type="number" min="-0.3" max="0.3" step="0.005" value="0">
+          </div>
+          <div class="row">
+            <label>Smoothing</label>
+            <input id="smoothing" type="range" min="0.1" max="0.9" step="0.05" value="0.65">
+            <input id="smoothingNum" type="number" min="0.1" max="0.9" step="0.05" value="0.65">
+          </div>
+          <div class="row">
+            <label>Depth Offset</label>
+            <input id="depthOffset" type="range" min="-0.5" max="0.5" step="0.01" value="0.1">
+            <input id="depthOffsetNum" type="number" min="-0.5" max="0.5" step="0.01" value="0.1">
+          </div>
+          <div class="row">
+            <label>Uniform Scale</label>
+            <input id="uniform" type="checkbox" checked>
+            <span style="opacity:.7; font-size: 11px;">Keep proportions</span>
+          </div>
+          <div class="row">
+            <label>Show Skeleton</label>
+            <input id="showSkeleton" type="checkbox" checked>
+            <span style="opacity:.7; font-size: 11px;">Debug overlay</span>
+          </div>
+        </div>
       </div>
     </div>
-    <script type="module" src="/static/viewer.js"></script>
+    <div id="status" class="status">Waiting for pose detection...</div>
+    <script type="module" src="viewer.js"></script>
   </body>
-  </html>
+</html>
